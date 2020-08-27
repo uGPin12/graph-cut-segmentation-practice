@@ -77,18 +77,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::vector<output_type> imgO(imgI.size(), 0), label(imgI.size(), 0);
-	graph_cut_segmentation_6n(imgO, label, imgI, mask, imgObj, imgBkg, siz, lambda, sigma);
-
-	for (unsigned int s = 0; s < siz[0] * siz[1] * siz[2]; s++) {
-		if (seed[s] == 1) {
-			imgO[s] = 1;
-			label[s] = 1;
-		}
-		else if (seed[s] == 2) {
-			imgO[s] = 2;
-			label[s] = 0;
-		}
-	}
+	graph_cut_segmentation(imgO, label, imgI, mask, seed, imgObj, imgBkg, siz, lambda, sigma);
 
 	std::vector<double> spacing = { mhdI.Spacing(0),mhdI.Spacing(1), mhdI.Spacing(2) };
 	mkdir_boost(dir_o + param + "/");
