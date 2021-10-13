@@ -4,88 +4,89 @@
 #include "dataIO.h"
 
 double calc_likelihood(double value, double ave, double var) {
-	return -(std::log(1 / std::sqrt(2.0 * 3.14159265357 * var)) + (-(value - ave) * (value - ave) / 2.0 / var));
+	constexpr double PI = 3.14159265357;
+	return -(std::log(1 / std::sqrt(2.0 * PI * var)) + (-std::pow(value - ave, 2.0) / 2.0 / var));
 }
 
 int main(int argc, char* argv[]) {
 
-	if (argc != 2) {
-		std::cout << "Usage: " << argv[0]
-			<< "input_info.ini\n"
-			<< "Hit any key to exit..." << std::endl;
-		system("pause");
+	if (argc > 7) {
+		std::cerr 
+			<< "Usage: " << argv[0]
+			<< "<inputFileName> <seedFileName> <outputFilename>"
+			<< "<sigma> <lambda> [maskFileName(option)]" << std::endl;
 		return EXIT_FAILURE;
 	}
 
-	std::string dir_i		= read_param_boost<std::string>(argv[1], "path"	, "dir_i");
-	std::string dir_o		= read_param_boost<std::string>(argv[1], "path"	, "dir_o");
-	std::string param		= read_param_boost<std::string>(argv[1], "param", "param");
-	std::string img_name	= read_param_boost<std::string>(argv[1], "param", "img_name");
-	std::string mask_name	= read_param_boost<std::string>(argv[1], "param", "mask_name");
-	std::string seed_name	= read_param_boost<std::string>(argv[1], "param", "seed_name");
-
-	double lambda	= read_param_boost<double>(argv[1], "param", "lambda");
-	double sigma	= read_param_boost<double>(argv[1], "param", "sigma");
+	// Parse arguments
+	std::string inputFileName = argv[1];
+	std::string seedFileName = argv[2];
+	std::string outputFilename = argv[3];
+	double sigma = std::stod(argv[4]);
+	double lambda = std::stod(argv[5]);
 
 	std::cout << "Segmentation starts : lambda = " << lambda << ", sigma = " << sigma << std::endl;
 	std::cout << std::endl;
 
-	std::vector<input_type> imgI;
-	std::vector<mask_type>	mask;
-	std::vector<seed_type>	seed;
-	ImageIO<3> mhdI, mhdM, mhdS;
-	mhdI.Read(imgI, dir_i + img_name);
-	mhdM.Read(mask, dir_i + mask_name);
-	mhdS.Read(seed, dir_i + seed_name);
+	std::vector<ImagePixelType> image;
+	std::vector<LabelPixelType>	mask;
+	std::vector<LabelPixelType>	seed;
+	ImageIO<3> imageIO, maskIO, labelIO;
+	imageIO.Read(image, inputFileName);
+	labelIO.Read(seed, seedFileName);
+	if (argc == 7) {
+		maskIO.Read(mask, argv[6]);
+	}
+	else {
+		mask.resize(imageIO.NumOfPixels());
+		std::fill(mask.begin(), mask.end(), 1);
+	}
 
-	std::vector<unsigned int> siz = { mhdI.Size(0),mhdI.Size(1), mhdI.Size(2) };
-
-	double ave_obj = 0, ave_bkg = 0, var_obj = 0, var_bkg = 0;
-	unsigned int obj_seed = 0, bkg_seed = 0;
-	for (unsigned int s = 0; s < siz[0] * siz[1] * siz[2]; s++) {
+	// Calculate average and variance of object and background.
+	double ave_obj = 0, ave_bkg = 0;
+	unsigned int numOfObj = 0, numOfBkg = 0;
+	for (unsigned int s = 0; s < imageIO.NumOfPixels(); s++) {
 		if (seed[s] == 1) {
-			ave_obj += static_cast<double>(imgI[s]);
-			obj_seed++;
+			ave_obj += static_cast<double>(image[s]);
+			numOfObj++;
 		}
 		else if (seed[s] == 2) {
-			ave_bkg += static_cast<double>(imgI[s]);
-			bkg_seed++;
+			ave_bkg += static_cast<double>(image[s]);
+			numOfBkg++;
 		}
-	}
-	ave_obj /= static_cast<double>(obj_seed);
-	ave_bkg /= static_cast<double>(bkg_seed);
 
-	for (unsigned int s = 0; s < siz[0] * siz[1] * siz[2]; s++) {
+	}
+	ave_obj /= numOfObj;
+	ave_bkg /= numOfBkg;
+
+	double var_obj = 0, var_bkg = 0;
+	for (unsigned int s = 0; s < imageIO.NumOfPixels(); s++) {
 		if (seed[s] == 1) {
-			var_obj += ((static_cast<double>(imgI[s]) - ave_obj) * (static_cast<double>(imgI[s]) - ave_obj));
+			var_obj += std::pow(static_cast<double>(image[s]) - ave_obj, 2.0);
 		}
 		else if (seed[s] == 2) {
-			var_bkg += ((static_cast<double>(imgI[s]) - ave_bkg) * (static_cast<double>(imgI[s]) - ave_bkg));
+			var_bkg += std::pow(static_cast<double>(image[s]) - ave_bkg, 2.0);
 		}
 	}
-	var_obj /= static_cast<double>(obj_seed);
-	var_bkg /= static_cast<double>(bkg_seed);
+	var_obj /= numOfObj;
+	var_bkg /= numOfBkg;
 	
 	std::cout << "Object		: " << ave_obj << "(+- " << std::sqrt(var_obj) << " )" << std::endl;
 	std::cout << "Background	: " << ave_bkg << "(+- " << std::sqrt(var_bkg) << " )" << std::endl;
-	std::cout << std::endl;
 
-	std::vector<feat_type> imgObj, imgBkg;
-	for (unsigned int s = 0; s < siz[0] * siz[1] * siz[2]; s++) {
-		imgObj.push_back(calc_likelihood(static_cast<double>(imgI[s]), ave_obj, var_obj));
-		imgBkg.push_back(calc_likelihood(static_cast<double>(imgI[s]), ave_bkg, var_bkg));
+	// Create likelihood image.
+	std::vector<double> imgObj, imgBkg;
+	for (unsigned int s = 0; s < imageIO.NumOfPixels(); s++) {
+		imgObj.push_back(calc_likelihood(static_cast<double>(image[s]), ave_obj, var_obj));
+		imgBkg.push_back(calc_likelihood(static_cast<double>(image[s]), ave_bkg, var_bkg));
 	}
 
-	std::vector<output_type> imgO(imgI.size(), 0), label(imgI.size(), 0);
-	graph_cut_segmentation(imgO, label, imgI, mask, seed, imgObj, imgBkg, siz, lambda, sigma);
+	std::vector<unsigned int> siz = { imageIO.Size(0), imageIO.Size(1) ,imageIO.Size(2) };
+	std::vector<double> spacing = { imageIO.Spacing(0), imageIO.Spacing(1) ,imageIO.Spacing(2) };
+	std::vector<LabelPixelType> imgO(imageIO.NumOfPixels(), 0), label(imageIO.NumOfPixels(), 0);
+	graph_cut_segmentation(imgO, label, image, mask, seed, imgObj, imgBkg, siz, lambda, sigma);
 
-	std::vector<double> spacing = { mhdI.Spacing(0),mhdI.Spacing(1), mhdI.Spacing(2) };
-	mkdir_boost(dir_o + param + "/");
-	save_vector(dir_o + param + "/label.mhd"	, imgO	, siz, spacing, true);
-	save_vector(dir_o + param + "/label_obj.mhd", label	, siz, spacing, true);
-	std::cout << std::endl;
+	labelIO.Write(label, outputFilename);
+	return EXIT_SUCCESS;
 
-	std::cout << "Segmentation complete." << std::endl;
-	system("pause");
-	return 0;
 }

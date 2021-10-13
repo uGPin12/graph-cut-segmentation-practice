@@ -5,10 +5,202 @@
 #include <iterator>
 #include <itkImage.h>
 #include <itkImportImageFilter.h>
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
+
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+#include "itkImageIOBase.h"
+#include "itkImageBase.h"
+#include "itkIOCommon.h"
+#include "itkImageIOFactory.h"
+
+template <class TImage>
+int ReadImage(const char* fileName, typename TImage::Pointer image)
+{
+    using ImageType = TImage;
+    using ImageReaderType = itk::ImageFileReader<ImageType>;
+
+    typename ImageReaderType::Pointer reader = ImageReaderType::New();
+
+    try
+    {
+        reader->SetFileName(fileName);
+        reader->Update();
+        image->Graft(reader->GetOutput());
+    }
+    catch (itk::ExceptionObject& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+template <unsigned int VDimension>
+int ReadScalarImage(const char* inputFileName, 
+    const itk::ImageIOBase::IOComponentType componentType)
+{
+    switch (componentType)
+    {
+    default:
+    case itk::ImageIOBase::IOComponentType::UNKNOWNCOMPONENTTYPE:
+        std::cerr << "Unknown and unsupported component type!" << std::endl;
+        return EXIT_FAILURE;
+
+    case itk::ImageIOBase::IOComponentType::UCHAR:
+    {
+        using PixelType = unsigned char;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::CHAR:
+    {
+        using PixelType = char;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::USHORT:
+    {
+        using PixelType = unsigned short;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::SHORT:
+    {
+        using PixelType = short;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::UINT:
+    {
+        using PixelType = unsigned int;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::INT:
+    {
+        using PixelType = int;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::ULONG:
+    {
+        using PixelType = unsigned long;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::LONG:
+    {
+        using PixelType = long;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::FLOAT:
+    {
+        using PixelType = float;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+
+    case itk::ImageIOBase::IOComponentType::DOUBLE:
+    {
+        using PixelType = double;
+        using ImageType = itk::Image<PixelType, VDimension>;
+
+        typename ImageType::Pointer image = ImageType::New();
+
+        if (ReadImage<ImageType>(inputFileName, image) == EXIT_FAILURE)
+        {
+            return EXIT_FAILURE;
+        }
+
+        break;
+    }
+    }
+    return EXIT_SUCCESS;
+}
+
 
 template<unsigned int Dim>
 class ImageIO{

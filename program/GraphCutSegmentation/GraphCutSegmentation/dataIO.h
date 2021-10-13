@@ -53,9 +53,6 @@ void save_vector(const std::string path, std::vector<T> img,
 {
 	unsigned int Dim = static_cast<unsigned int>(siz.size());
 	if (Dim != spacing.size()) {
-		std::cerr << "Invalid input : 'spacing' or 'siz'.\n"
-			<< "Hit any key to exit..." << std::endl;
-		system("pause");
 		std::exit(EXIT_FAILURE);
 	}
 
