@@ -86,11 +86,8 @@ void graph_cut_segmentation(
 	// End raster scan
 
 	// Graph cut
-	std::cout << std::endl;
-	std::cout << "Max flow" << std::endl;
 	feat_type cost = g->maxflow();
 	std::cout << "Cost = " << cost << std::endl;
-	std::cout << std::endl;
 
 	// Starts raster scan
 	for (z = 0; z < ze; z++) {
