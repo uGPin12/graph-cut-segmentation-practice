@@ -39,7 +39,6 @@ void graph_cut_segmentation(
 			node_idx[s] = ++n_mask;
 		}
 	}
-	std::cout << "There are " << n_mask << " voxel in the mask(ignore seed)" << std::endl;
 
 	// Construct and initialize st-graph
 	using graph_type = maxflow::Graph<double, double, double>;
