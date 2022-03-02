@@ -108,9 +108,13 @@ int main(int argc, char* argv[]) {
 	std::cout << "<データのフォルダ構成>" << std::endl;
 	std::cout << root << std::endl;
 	std::cout << " |-" << inputFolder << std::endl;
-	std::cout << " |-" << seedFolder << std::endl;
-	if (maskFolder != "none")
-		std::cout << " |-" << maskFolder << std::endl;
+	if (maskFolder != "none") {
+		std::cout << " |-" << seedFolder << std::endl;
+		std::cout << " --" << maskFolder << std::endl;
+	}
+	else {
+		std::cout << " --" << seedFolder << std::endl;
+	}
 	
 	std::cout << "<ハイパーパラメータ>" << std::endl;
 	std::cout << "データ項にかける重み lambda = " << lambda << std::endl;

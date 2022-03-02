@@ -2,7 +2,8 @@
 
 rem remから始まる行はコメント
 rem 最後のMASKFILENAMEはオプション
-rem 結果がおかしかったり落ちたりしたら，common.hのPixelTypeが画像ファイルのとあっているかを確認（あっていればプログラムのバグ）
+rem 結果がおかしかったり落ちたりしたら，common.hのPixelTypeが画像ファイルのとあっているかを確認
+rem あっていればプログラムのバグですm(__)m。頑張って直してください
 
 rem exeファイルへのパス
 set EXE=..\GraphCutSegmentation\x64\Release\GraphCutSegmentation.exe
