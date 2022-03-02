@@ -5,7 +5,8 @@
 
 double calc_likelihood(double value, double ave, double var) {
 	constexpr double PI = 3.14159265357;
-	return -(std::log(1 / std::sqrt(2.0 * PI * var)) + (-std::pow(value - ave, 2.0) / 2.0 / var));
+	constexpr double EPS = std::numeric_limits<double>::epsilon();
+	return -(std::log(1 / std::sqrt(2.0 * PI * std::max(EPS, var))) + (-std::pow(value - ave, 2.0) / 2.0 / std::max(EPS, var)));
 }
 
 int main(int argc, char* argv[]) {
