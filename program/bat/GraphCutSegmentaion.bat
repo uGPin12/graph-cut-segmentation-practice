@@ -8,24 +8,21 @@ rem あっていればプログラムのバグですm(__)m。頑張って直し�
 rem exeファイルへのパス
 set EXE=..\GraphCutSegmentation\x64\Release\GraphCutSegmentation.exe
 
+set ROOT=data
+
 rem 入力画像へのパス
-set INPUTFILENAME=C:\Users\tanabe\Desktop\graph-cut-segmentation-practice\data\orgSTD_121.mhd
+set INPUT=input
 
 rem シード画像へのパス
-set SEEDFILENAME=C:\Users\tanabe\Desktop\graph-cut-segmentation-practice\data\seed_pic.mhd
+set SEED=seed
 
 rem 出力画像へのパス
-set OUTPUTFILENAME=C:\Users\tanabe\Desktop\output3.mhd
+set OUTPUT=output/sigma55ambda1
 
-rem ハイパーパラメータ（sigma）
-set SIGMA=1
+rem マスク画像へのパス
+set MASK=mask
 
-rem ハイパーパラメータ（lambda）
-set LAMBDA=0.001
+set SIGMA=5.5
+set LAMBDA=1
 
-rem マスク画像へのパス（指定しなければ画像全体で計算）
-rem set MASKFILENAME=
-
-%EXE% %INPUTFILENAME% %SEEDFILENAME% %OUTPUTFILENAME% %SIGMA% %LAMBDA%
-
-PAUSE
+%EXE% %FILENAME% --sigma %SIGMA% --lambda %LAMBDA% -r %ROOT% -o %OUTPUT%
